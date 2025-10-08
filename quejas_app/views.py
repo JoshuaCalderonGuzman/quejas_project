@@ -8,3 +8,6 @@ def nueva_queja(request):
     if request.method == 'POST':
         pass
     return render(request, 'nueva_queja.html')
+
+def mis_quejas(request):
+    return render(request, 'mis_quejas.html')
