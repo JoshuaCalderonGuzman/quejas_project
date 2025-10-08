@@ -11,3 +11,6 @@ def nueva_queja(request):
 
 def mis_quejas(request):
     return render(request, 'mis_quejas.html')
+
+def administrar_quejas(request):
+    return render(request, 'administrador_quejas.html')
