@@ -1,0 +1,195 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Nueva Queja - Sistema de Quejas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        header {
+            background-color: #ff6a00;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+        header h1 {
+            font-size: 1.8rem;
+            color: #000;
+            margin: 0;
+            font-weight: bold;
+        }
+        .form-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 80vh;
+            padding-top: 20px;
+        }
+        .form-box {
+            background-color: #e0e0e0;
+            padding: 40px;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: row;
+            gap: 40px;
+            min-width: 600px;
+            max-width: 800px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        .form-left, .form-right {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .form-group {
+            width: 100%;
+            max-width: 300px;
+        }
+        .form-group label {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            background-color: #fff;
+        }
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        .evidence-box {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            flex-wrap: nowrap;
+        }
+        .evidence-item {
+            width: 120px;
+            height: 60px;
+            background-color: #000;
+            border: 2px solid #000;
+            border-radius: 5px;
+        }
+        .add-evidence {
+            font-size: 2rem;
+            color: #000;
+            cursor: pointer;
+            padding: 12px;
+            background-color: #ddd;
+            border-radius: 50%;
+        }
+        .type-box {
+            background-color: #ff6a00;
+            padding: 20px;
+            border-radius: 10px;
+            width: 200px;
+        }
+        .type-box label {
+            font-size: 1.1rem;
+            color: #000;
+            margin-bottom: 15px;
+            display: block;
+        }
+        .type-box div {
+            margin-bottom: 15px;
+        }
+        .type-box input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        .submit-btn {
+            background-color: #ff6a00;
+            color: #000;
+            border: none;
+            padding: 14px 35px;
+            border-radius: 25px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 100%;
+            max-width: 280px;
+            margin-top: 25px;
+            transition: 0.3s;
+        }
+        .submit-btn:hover {
+            background-color: #e55b00;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="{% url 'menu' %}"><i class="bi bi-arrow-left-circle"></i></a>
+    <h1>Nueva queja</h1>
+    <button type="submit" form="queja-form" class="icono-login"><i class="bi bi-check-circle"></i></button>
+</header>
+
+<div class="form-container">
+    <div class="form-box">
+        <div class="form-left">
+            <div class="form-group">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="correo">Correo:</label>
+                <input type="email" id="correo" name="correo" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="descripcion">Descripción:</label>
+                <textarea id="descripcion" name="descripcion" class="form-control" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Evidencia:</label>
+                <div class="evidence-box">
+                    <div class="evidence-item" data-file="img1"></div>
+                    <div class="evidence-item" data-file="vid1"></div>
+                    <span class="add-evidence">+</span>
+                </div>
+            </div>
+        </div>
+        <div class="form-right">
+            <div class="type-box">
+                <label>Tipo de queja:</label>
+                <div>
+                    <input type="checkbox" id="tipo1" name="tipo" value="tipo1" >
+                    <label for="tipo1">tipo1</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="tipo2" name="tipo" value="tipo2" >
+                    <label for="tipo2">tipo2</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="tipo3" name="tipo" value="tipo3" >
+                    <label for="tipo3">tipo3</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="tipo4" name="tipo" value="tipo4" >
+                    <label for="tipo4">tipo4</label>
+                </div>
+            </div>
+            <button type="submit" class="submit-btn">Enviar</button>
+        </div>
+    </form>
+    </div>
+</div>
+
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+</body>
+</html>
