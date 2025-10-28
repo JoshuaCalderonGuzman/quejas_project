@@ -1,0 +1,78 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú Principal - Sistema de Quejas</title>
+    
+    <!-- Tailwind CSS para diseño y responsividad -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para iconos modernos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <style>
+        /* Definimos la fuente Inter para un look moderno */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background-color: #f0f0f0; /* Fondo general */
+        }
+        /* Color principal: Ámbar (similar al FF6A00) */
+        .bg-primary-amber {
+            background-color: #ff8c00; 
+        }
+        .text-primary-amber {
+            color: #ff8c00;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+<!-- CABECERA FIJA Y FUNCIONAL (Fondo Ámbar Principal) -->
+<header class="p-4 flex justify-between items-center bg-primary-amber text-black shadow-xl sticky top-0 z-10">
+    <!-- Título Principal -->
+    <h1 class="text-xl md:text-2xl font-extrabold tracking-wide text-white">Sistema de Quejas Municipales</h1>
+    
+    <!-- Botón de Login/Admin -->
+    <a href="{% url 'admin:login' %}" 
+       class="text-3xl p-2 rounded-full hover:bg-black/10 transition duration-300">
+        <i class="fas fa-user-circle text-white"></i>
+    </a>
+</header>
+
+<!-- CONTENEDOR PRINCIPAL DEL MENÚ -->
+<div class="flex flex-col items-center justify-center min-h-[85vh] p-4">
+    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-10 text-center">¿Qué deseas hacer?</h2>
+    
+    <!-- CONTENEDOR DE OPCIONES (Grid responsivo) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-2xl">
+        
+        <!-- Tarjeta: Nueva Queja -->
+        <a href="{% url 'nueva_queja' %}" 
+           class="bg-white p-8 rounded-2xl shadow-xl border-t-4 border-primary-amber 
+                  flex flex-col items-center text-center space-y-4 
+                  hover:shadow-2xl hover:scale-[1.03] transition duration-300">
+            
+            <i class="fas fa-plus-circle text-6xl text-primary-amber"></i>
+            <h3 class="text-xl font-bold text-gray-900">Nueva Queja</h3>
+            <p class="text-gray-600">Reporta un problema o incidente en la municipalidad.</p>
+        </a>
+        
+        <!-- Tarjeta: Revisar Quejas -->
+        <a href="{% url 'mis_quejas' %}" 
+           class="bg-white p-8 rounded-2xl shadow-xl border-t-4 border-gray-600 
+                  flex flex-col items-center text-center space-y-4 
+                  hover:shadow-2xl hover:scale-[1.03] transition duration-300">
+            
+            <i class="fas fa-list-check text-6xl text-gray-600"></i>
+            <h3 class="text-xl font-bold text-gray-900">Revisar Quejas</h3>
+            <p class="text-gray-600">Consulta el estado y seguimiento de tus reportes.</p>
+        </a>
+        
+    </div>
+</div>
+
+</body>
+</html>

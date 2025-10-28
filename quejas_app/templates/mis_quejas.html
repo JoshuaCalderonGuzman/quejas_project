@@ -1,0 +1,260 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Quejas - Sistema de Quejas</title>
+    
+    <!-- Tailwind CSS para diseño y responsividad -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para iconos modernos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <style>
+        /* Definimos la fuente Inter y colores base */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background-color: #f0f0f0; 
+        }
+        /* Color principal: Ámbar (similar al FF6A00) */
+        .bg-primary-amber {
+            background-color: #ff8c00; 
+        }
+        
+        /* Definición de colores de estado personalizados */
+        .status-nuevo {
+            background-color: #ffedd5; /* Ámbar claro */
+            color: #d97706; /* Ámbar oscuro */
+            border: 1px solid #d97706;
+        }
+        .status-proceso {
+            background-color: #eff6ff; /* Azul claro */
+            color: #2563eb; /* Azul oscuro */
+            border: 1px solid #60a5fa;
+        }
+        .status-resuelto {
+            background-color: #d1fae5; /* Verde claro */
+            color: #059669; /* Verde oscuro */
+            border: 1px solid #34d399;
+        }
+        .status-rechazado {
+            background-color: #fee2e2; /* Rojo claro */
+            color: #ef4444; /* Rojo oscuro */
+            border: 1px solid #f87171;
+        }
+
+        .estado {
+            @apply text-xs font-bold uppercase py-1 px-3 rounded-full tracking-wider whitespace-nowrap;
+        }
+
+    </style>
+</head>
+<body class="bg-gray-100">
+
+<!-- CABECERA FIJA Y FUNCIONAL (Fondo Ámbar Principal) -->
+<header class="p-4 flex justify-between items-center bg-primary-amber shadow-md">
+    <a href="{% url 'menu' %}" class="text-white text-2xl font-bold hover:underline">
+        <i class="fas fa-chevron-left mr-2"></i>Mis Quejas
+    </a>
+</header>
+
+<div class="container mx-auto p-4 md:p-8">
+    
+    <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl font-extrabold text-gray-800 mb-6">Mis Quejas Reportadas</h2>
+        
+        <!-- Contenedor de mensajes de feedback -->
+        <div id="message-container" class="mb-4"></div>
+        
+        <!-- Contenedor de la lista de quejas (se llenará con JS) -->
+        <div id="complaints-list" class="space-y-4">
+            <!-- Spinner de carga -->
+            <div id="loading-spinner-list" class="text-center p-10 text-gray-500">
+                <i class="fas fa-spinner fa-spin text-4xl mb-3"></i>
+                <p>Cargando sus quejas...</p>
+            </div>
+            <!-- Lista de quejas se insertará aquí -->
+        </div>
+        
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const BASE_URL = '/api/'; 
+    const complaintsList = document.getElementById('complaints-list');
+    const loadingSpinner = document.getElementById('loading-spinner-list');
+    const messageContainer = document.getElementById('message-container');
+
+    /**
+     * Muestra mensajes de feedback (éxito o error).
+     */
+    function showMessage(type, message, duration = 5000) {
+        const isSuccess = type === 'success';
+        const colorClass = isSuccess ? 'bg-green-100 border-green-400 text-green-700' : 'bg-red-100 border-red-400 text-red-700';
+        const icon = isSuccess ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle';
+        const title = isSuccess ? '¡Éxito!' : 'Error:';
+
+        messageContainer.innerHTML = `
+            <div class="${colorClass} px-4 py-3 rounded-xl border relative" role="alert">
+                <div class="flex items-center">
+                    <i class="${icon} mr-3 text-xl"></i>
+                    <div>
+                        <strong class="font-bold">${title}</strong>
+                        <span class="block sm:inline ml-2">${message}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        if (duration > 0) {
+            setTimeout(() => {
+                messageContainer.innerHTML = '';
+            }, duration);
+        }
+    }
+
+    /**
+     * Genera el HTML de una única queja.
+     */
+    function createComplaintHtml(complaint) {
+        const statusClass = `status-${complaint.status.toLowerCase().replace('_', '-')}`;
+        const reporterDisplay = complaint.reporter_username || complaint.reporter_name || 'Anónimo';
+
+        return `
+            <div class="queja-item bg-white p-5 rounded-xl shadow-md flex justify-between items-center gap-4 
+                        border-l-4 border-amber-500 hover:shadow-lg transition duration-200" 
+                 data-complaint-id="${complaint.id}">
+                
+                <div class="flex items-center gap-3 flex-grow min-w-0">
+                    <i class="fas fa-exclamation-triangle text-xl text-amber-500 flex-shrink-0"></i>
+                    <div class="truncate min-w-0">
+                        <span class="text-lg font-medium text-gray-900 truncate block">
+                            QUEJA${complaint.id}: ${complaint.title}
+                        </span>
+                        <span class="text-xs text-gray-500">
+                            Reportado por: ${reporterDisplay}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3 flex-shrink-0">
+                    <div class="estado ${statusClass}">
+                        ${complaint.status.toUpperCase().replace('_', ' ')}
+                    </div>
+                    <button class="minus-btn text-xl text-gray-500 hover:text-red-600 transition duration-150" 
+                            title="Eliminar Queja" data-id="${complaint.id}">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    // =================================================================
+    // PETICIÓN GET (Async/Await)
+    // Cargar Mis Quejas
+    // =================================================================
+    async function loadMyComplaints() {
+        loadingSpinner.classList.remove('hidden');
+        complaintsList.innerHTML = ''; 
+
+        try {
+            // Utilizamos el endpoint de complaints. El backend debe filtrar por el usuario autenticado.
+            const response = await fetch(BASE_URL + 'complaints/', {
+                method: 'GET',
+                headers: {
+                    // Asume que la autenticación está activa (ej. Session/Token)
+                    'Accept': 'application/json' 
+                }
+            });
+
+            if (!response.ok) {
+                // Si la respuesta no es 2xx, lanza un error
+                throw new Error(`Error ${response.status}: No se pudieron cargar las quejas.`);
+            }
+
+            const complaints = await response.json();
+
+            if (complaints.length === 0) {
+                complaintsList.innerHTML = `
+                    <div class="text-center p-10 bg-white rounded-xl shadow-lg text-gray-600">
+                        <i class="fas fa-info-circle text-4xl mb-3"></i>
+                        <p class="text-lg font-semibold">Aún no ha reportado ninguna queja.</p>
+                        <p class="text-sm">Vaya a "Nueva Queja" para comenzar.</p>
+                    </div>
+                `;
+            } else {
+                let html = complaints.map(createComplaintHtml).join('');
+                complaintsList.innerHTML = html;
+            }
+
+        } catch (error) {
+            console.error("Error al cargar quejas:", error);
+            showMessage('error', error.message || 'Error al conectar con el servidor.');
+
+        } finally {
+            loadingSpinner.classList.add('hidden');
+        }
+    }
+
+    // =================================================================
+    // PETICIÓN DELETE (Async/Await)
+    // Eliminar Queja
+    // =================================================================
+    async function deleteComplaint(id) {
+        if (!confirm(`¿Está seguro de que desea eliminar la queja ID ${id}? Esta acción es irreversible.`)) {
+            return;
+        }
+        
+        // Bloquear temporalmente el botón
+        const itemElement = document.querySelector(`[data-complaint-id="${id}"]`);
+        if(itemElement) itemElement.style.opacity = '0.5';
+
+        try {
+            const response = await fetch(`${BASE_URL}complaints/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    // Asume manejo de autenticación
+                }
+            });
+
+            if (response.status === 204) { // 204 No Content es el éxito típico de DELETE
+                showMessage('success', `La queja ID ${id} ha sido eliminada con éxito.`);
+                // Eliminar el elemento de la interfaz de usuario
+                if (itemElement) itemElement.remove();
+            } else if (response.status === 404) {
+                 throw new Error(`Error 404: La queja ID ${id} no fue encontrada.`);
+            } else {
+                // Leer el error del cuerpo si no es un 204
+                const errorData = await response.json(); 
+                throw new Error(`Error ${response.status}: ${errorData.detail || 'No se pudo eliminar la queja.'}`);
+            }
+
+        } catch (error) {
+            console.error(`Error al eliminar queja ${id}:`, error);
+            showMessage('error', error.message);
+            if(itemElement) itemElement.style.opacity = '1'; // Restaurar opacidad
+
+        }
+    }
+
+    // Listener para botones de eliminar (delegación de eventos)
+    complaintsList.addEventListener('click', (e) => {
+        const deleteButton = e.target.closest('.minus-btn');
+        if (deleteButton) {
+            const complaintId = deleteButton.dataset.id;
+            deleteComplaint(complaintId);
+        }
+    });
+
+    // Cargar la lista de quejas al iniciar
+    loadMyComplaints();
+});
+</script>
+
+</body>
+</html>

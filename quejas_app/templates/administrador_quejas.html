@@ -1,0 +1,350 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrar Quejas - Sistema de Quejas</title>
+    
+    <!-- Tailwind CSS para diseño y responsividad -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para iconos modernos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <style>
+        /* Definimos la fuente Inter y colores base */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background-color: #f0f0f0; 
+        }
+        /* Color principal: Ámbar (similar al FF6A00) */
+        .bg-primary-amber {
+            background-color: #ff8c00; 
+        }
+        
+        /* Definición de colores de estado personalizados */
+        .status-new {
+            background-color: #ffedd5; /* Ámbar claro */
+            color: #d97706; /* Ámbar oscuro */
+            border: 1px solid #d97706;
+        }
+        .status-in-progress {
+            background-color: #eff6ff; /* Azul claro */
+            color: #2563eb; /* Azul oscuro */
+            border: 1px solid #60a5fa;
+        }
+        .status-resolved {
+            background-color: #d1fae5; /* Verde claro */
+            color: #059669; /* Verde oscuro */
+            border: 1px solid #34d399;
+        }
+        .status-rejected {
+            background-color: #fee2e2; /* Rojo claro */
+            color: #ef4444; /* Rojo oscuro */
+            border: 1px solid #f87171;
+        }
+
+        .estado {
+            @apply text-xs font-bold uppercase py-1 px-3 rounded-full tracking-wider whitespace-nowrap;
+        }
+        .filter-btn-active {
+            @apply bg-gray-900 text-white shadow-md;
+        }
+
+    </style>
+</head>
+<body class="bg-gray-100">
+
+<!-- CABECERA FIJA Y FUNCIONAL (Fondo Ámbar Principal) -->
+<header class="p-4 flex justify-between items-center bg-primary-amber shadow-md">
+    <a href="{% url 'menu' %}" class="text-white text-2xl font-bold hover:underline">
+        <i class="fas fa-chevron-left mr-2"></i>Admin Quejas
+    </a>
+</header>
+
+<div class="container mx-auto p-4 md:p-8">
+    
+    <div class="max-w-6xl mx-auto">
+        <h2 class="text-3xl font-extrabold text-gray-800 mb-6">Panel de Administración de Quejas</h2>
+
+        <!-- Contenedor de mensajes de feedback -->
+        <div id="message-container" class="mb-4"></div>
+        
+        <!-- FILTROS DE ESTADO -->
+        <div class="flex flex-wrap gap-2 mb-6">
+            <button class="filter-btn py-2 px-4 rounded-xl bg-white text-gray-700 hover:bg-gray-100 transition duration-150 filter-btn-active" data-status="all">Todas</button>
+            <button class="filter-btn py-2 px-4 rounded-xl bg-white text-gray-700 hover:bg-gray-100 transition duration-150" data-status="new">Nuevas</button>
+            <button class="filter-btn py-2 px-4 rounded-xl bg-white text-gray-700 hover:bg-gray-100 transition duration-150" data-status="in_progress">En Progreso</button>
+            <button class="filter-btn py-2 px-4 rounded-xl bg-white text-gray-700 hover:bg-gray-100 transition duration-150" data-status="resolved">Resueltas</button>
+            <button class="filter-btn py-2 px-4 rounded-xl bg-white text-gray-700 hover:bg-gray-100 transition duration-150" data-status="rejected">Rechazadas</button>
+        </div>
+
+        <!-- Contenedor de la lista de quejas (se llenará con JS) -->
+        <div id="complaints-admin-list" class="space-y-4">
+            <!-- Spinner de carga -->
+            <div id="loading-spinner-admin" class="text-center p-10 text-gray-500">
+                <i class="fas fa-spinner fa-spin text-4xl mb-3"></i>
+                <p>Cargando todas las quejas...</p>
+            </div>
+            <!-- Lista de quejas se insertará aquí -->
+        </div>
+        
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const BASE_URL = '/api/'; 
+    const complaintsAdminList = document.getElementById('complaints-admin-list');
+    const loadingSpinner = document.getElementById('loading-spinner-admin');
+    const messageContainer = document.getElementById('message-container');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+
+    const STATUS_MAP = {
+        'new': { label: 'NUEVA', class: 'status-new' },
+        'in_progress': { label: 'EN PROGRESO', class: 'status-in-progress' },
+        'resolved': { label: 'RESUELTA', class: 'status-resolved' },
+        'rejected': { label: 'RECHAZADA', class: 'status-rejected' },
+    };
+    
+    /**
+     * Muestra mensajes de feedback (éxito o error).
+     */
+    function showMessage(type, message, duration = 5000) {
+        const isSuccess = type === 'success';
+        const colorClass = isSuccess ? 'bg-green-100 border-green-400 text-green-700' : 'bg-red-100 border-red-400 text-red-700';
+        const icon = isSuccess ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle';
+        const title = isSuccess ? '¡Éxito!' : 'Error:';
+
+        messageContainer.innerHTML = `
+            <div class="${colorClass} px-4 py-3 rounded-xl border relative" role="alert">
+                <div class="flex items-center">
+                    <i class="${icon} mr-3 text-xl"></i>
+                    <div>
+                        <strong class="font-bold">${title}</strong>
+                        <span class="block sm:inline ml-2">${message}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        if (duration > 0) {
+            setTimeout(() => {
+                messageContainer.innerHTML = '';
+            }, duration);
+        }
+    }
+
+    /**
+     * Genera el HTML de una única queja para el panel de administración.
+     */
+    function createAdminComplaintHtml(complaint) {
+        const statusData = STATUS_MAP[complaint.status] || { label: 'DESCONOCIDO', class: 'bg-gray-200 text-gray-600' };
+        const reporterDisplay = complaint.reporter_username || complaint.reporter_name || 'Anónimo';
+
+        return `
+            <div class="bg-white p-5 rounded-xl shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 
+                        border-l-4 ${statusData.class.replace('status-', 'border-')} hover:shadow-xl transition duration-200"
+                 data-complaint-id="${complaint.id}" data-current-status="${complaint.status}">
+                
+                <div class="queja-details flex-grow">
+                    <span class="text-xl font-bold text-gray-900">QUEJA${complaint.id}: ${complaint.title}</span>
+                    <p class="text-sm text-gray-600 truncate max-w-full">${complaint.description.substring(0, 80)}...</p>
+                    <p class="text-xs text-gray-500 mt-1">Categoría: ${complaint.category_name} | Reportado por: ${reporterDisplay}</p>
+                </div>
+                
+                <div class="action-buttons flex items-center gap-3 mt-3 sm:mt-0 flex-shrink-0">
+                    <!-- Selector de Estado de Edición -->
+                    <select class="status-select form-control-custom text-sm font-semibold p-2" data-id="${complaint.id}">
+                        <option value="new" ${complaint.status === 'new' ? 'selected' : ''}>Nueva</option>
+                        <option value="in_progress" ${complaint.status === 'in_progress' ? 'selected' : ''}>En Progreso</option>
+                        <option value="resolved" ${complaint.status === 'resolved' ? 'selected' : ''}>Resuelta</option>
+                        <option value="rejected" ${complaint.status === 'rejected' ? 'selected' : ''}>Rechazada</option>
+                    </select>
+
+                    <button class="delete-btn text-2xl text-gray-500 hover:text-red-600 transition duration-150" 
+                            title="Eliminar Queja" data-id="${complaint.id}">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    // =================================================================
+    // PETICIÓN GET (Async/Await)
+    // Cargar y Filtrar Quejas
+    // =================================================================
+    async function loadComplaints(statusFilter = 'all') {
+        loadingSpinner.classList.remove('hidden');
+        complaintsAdminList.innerHTML = '';
+        messageContainer.innerHTML = '';
+
+        let url = BASE_URL + 'complaints/';
+        // Si no es 'all', añade el parámetro de filtrado.
+        if (statusFilter !== 'all') {
+            url += `?status=${statusFilter}`;
+        }
+
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json' 
+                    // Asume autenticación de staff activa
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: No se pudieron cargar las quejas de administración.`);
+            }
+
+            const complaints = await response.json();
+
+            if (complaints.length === 0) {
+                complaintsAdminList.innerHTML = `
+                    <div class="text-center p-10 bg-white rounded-xl shadow-lg text-gray-600">
+                        <i class="fas fa-search text-4xl mb-3"></i>
+                        <p class="text-lg font-semibold">No se encontraron quejas con el filtro "${statusFilter.toUpperCase().replace('_', ' ')}".</p>
+                    </div>
+                `;
+            } else {
+                let html = complaints.map(createAdminComplaintHtml).join('');
+                complaintsAdminList.innerHTML = html;
+            }
+
+        } catch (error) {
+            console.error("Error al cargar quejas:", error);
+            showMessage('error', error.message || 'Error al conectar con el servidor.');
+
+        } finally {
+            loadingSpinner.classList.add('hidden');
+        }
+    }
+
+    // =================================================================
+    // PETICIÓN PATCH (Async/Await)
+    // Modificar el Estado de la Queja
+    // =================================================================
+    async function updateComplaintStatus(id, newStatus) {
+        // Bloquear el elemento visualmente
+        const itemElement = document.querySelector(`[data-complaint-id="${id}"]`);
+        if(itemElement) itemElement.style.opacity = '0.5';
+
+        try {
+            const response = await fetch(`${BASE_URL}complaints/${id}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Asume autenticación de staff activa
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Error ${response.status}: ${errorData.detail || 'No se pudo actualizar el estado.'}`);
+            }
+
+            const updatedComplaint = await response.json();
+            showMessage('success', `Estado de Queja ID ${updatedComplaint.id} actualizado a ${STATUS_MAP[newStatus].label}.`);
+            
+            // Re-renderizar o actualizar solo el elemento de la lista
+            const newStatusClass = STATUS_MAP[newStatus].class.replace('status-', 'border-');
+            if(itemElement) {
+                // Actualizar clase de borde y data-status
+                itemElement.classList.remove('border-status-new', 'border-status-in-progress', 'border-status-resolved', 'border-status-rejected');
+                itemElement.classList.add(newStatusClass);
+                itemElement.dataset.currentStatus = newStatus;
+
+                // Si hay un filtro activo y la queja ya no pertenece, quitarla (opcional, mejor recargar la lista con el filtro)
+                const currentFilter = document.querySelector('.filter-btn-active').dataset.status;
+                if (currentFilter !== 'all' && currentFilter !== newStatus) {
+                    itemElement.remove();
+                }
+
+                itemElement.style.opacity = '1';
+            }
+            
+        } catch (error) {
+            console.error(`Error al modificar estado ${id}:`, error);
+            showMessage('error', error.message);
+            if(itemElement) itemElement.style.opacity = '1'; // Restaurar opacidad
+        }
+    }
+
+
+    // =================================================================
+    // PETICIÓN DELETE (Async/Await) - Para Admin
+    // =================================================================
+    async function deleteComplaintAdmin(id) {
+        if (!confirm(`[ADMIN] ¿Está seguro de eliminar la queja ID ${id}?`)) {
+            return;
+        }
+        
+        const itemElement = document.querySelector(`[data-complaint-id="${id}"]`);
+        if(itemElement) itemElement.style.opacity = '0.5';
+
+        try {
+            const response = await fetch(`${BASE_URL}complaints/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    // Asume manejo de autenticación de staff
+                }
+            });
+
+            if (response.status === 204) { 
+                showMessage('success', `[ADMIN] Queja ID ${id} eliminada con éxito.`);
+                if (itemElement) itemElement.remove();
+            } else {
+                const errorData = await response.json(); 
+                throw new Error(`Error ${response.status}: ${errorData.detail || 'No se pudo eliminar la queja.'}`);
+            }
+
+        } catch (error) {
+            console.error(`Error al eliminar queja ${id}:`, error);
+            showMessage('error', error.message);
+            if(itemElement) itemElement.style.opacity = '1'; 
+        }
+    }
+
+
+    // Listener para filtros de estado
+    filterButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            filterButtons.forEach(btn => btn.classList.remove('filter-btn-active'));
+            e.currentTarget.classList.add('filter-btn-active');
+            const status = e.currentTarget.dataset.status;
+            loadComplaints(status);
+        });
+    });
+
+
+    // Listener para selectores de estado y botones de eliminar (delegación de eventos)
+    complaintsAdminList.addEventListener('change', (e) => {
+        if (e.target.classList.contains('status-select')) {
+            const select = e.target;
+            const complaintId = select.dataset.id;
+            const newStatus = select.value;
+            updateComplaintStatus(complaintId, newStatus);
+        }
+    });
+
+    complaintsAdminList.addEventListener('click', (e) => {
+        const deleteButton = e.target.closest('.delete-btn');
+        if (deleteButton) {
+            const complaintId = deleteButton.dataset.id;
+            deleteComplaintAdmin(complaintId);
+        }
+    });
+
+
+    // Cargar la lista de quejas al iniciar (por defecto, todas)
+    loadComplaints('all');
+});
+</script>
+
+</body>
+</html>
