@@ -3,13 +3,10 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-<<<<<<< HEAD
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nueva Queja - Sistema de Quejas</title>
     
-    <!-- Tailwind CSS para diseño y responsividad -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome para iconos modernos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     
     <style>
@@ -18,16 +15,20 @@
         body { 
             font-family: 'Inter', sans-serif; 
             min-height: 100vh;
-            background-color: #f0f0f0; /* Fondo general */
+            /* CAMBIO UI: Fondo más contrastado */
+            background-color: #e5e7eb; /* Gris 200 */ 
         }
         /* Estilos personalizados para los campos de formulario: más suaves y con efecto de profundidad */
         .form-control-custom {
-            @apply w-full p-3 border border-gray-300 rounded-xl shadow-inner bg-gray-50
-                   focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition duration-200;
+            /* @apply se expande a las clases de Tailwind */
+           @apply w-4/5 p-3 border border-gray-300 rounded-xl shadow-inner bg-gray-50
+                focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition duration-200;
         }
         /* Estilos para el botón de envío */
         .submit-btn {
-            @apply bg-amber-600 text-white hover:bg-amber-700 active:bg-amber-800 transition duration-150;
+            /* CAMBIO UI: Añadir un efecto de elevación (shadow) más fuerte y escala al hacer hover */
+            @apply bg-amber-600 text-white font-extrabold shadow-xl hover:bg-amber-700 active:bg-amber-800 
+                   hover:shadow-2xl hover:scale-[1.01] transition duration-200 ease-in-out;
         }
         /* Color principal: Ámbar (similar al FF6A00) */
         .bg-primary-amber {
@@ -42,74 +43,69 @@
 </head>
 <body class="bg-gray-100">
 
-<!-- CABECERA FIJA Y FUNCIONAL (Fondo Ámbar Principal) -->
-<header class="p-4 flex justify-between items-center bg-primary-amber shadow-md">
-    <a href="{% url 'menu' %}" class="text-white text-2xl font-bold hover:underline">
-        <i class="fas fa-chevron-left mr-2"></i>Nueva Queja
+<header class="p-4 flex items-center bg-primary-amber shadow-xl sticky top-0 z-10">
+    <a href="{% url 'menu' %}" class="text-white text-xl md:text-2xl font-bold hover:opacity-90 transition">
+        <i class="fas fa-arrow-left mr-3"></i>Nueva Queja
     </a>
 </header>
 
 <div class="container mx-auto p-4 md:p-8">
     
     <div class="max-w-3xl mx-auto bg-white p-6 md:p-10 rounded-3xl shadow-2xl">
-        <h2 class="text-3xl font-extrabold text-gray-800 mb-6 text-center">Reporte su Queja</h2>
+        <h2 class="text-3xl font-extrabold text-gray-800 mb-8 text-center border-b-2 pb-4">Reporte su Queja <i class="text-primary-amber fas fa-lightbulb ml-2"></i></h2>
         
-        <!-- Contenedor de mensajes de feedback -->
         <div id="message-container" class="mb-4">
-            <!-- Los mensajes de éxito/error se insertarán aquí -->
         </div>
 
         <form id="new-complaint-form" class="space-y-6">
             
-            <!-- Campo de Título -->
+            {% csrf_token %} 
+            
             <div>
-                <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Título de la Queja</label>
+                <label for="title" class="block text-sm font-bold text-gray-700 mb-1">Título de la Queja</label>
                 <input type="text" id="title" name="title" required 
-                       class="form-control-custom" placeholder="Ej: Falla de semáforo en Av. Central">
+                        class="form-control-custom" placeholder="Ej: Falla de semáforo en Av. Central">
             </div>
 
-            <!-- Campo de Categoría (Petición AJAX Dependiente) -->
             <div>
-                <label for="category-select" class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+                <label for="category-select" class="block text-sm font-bold text-gray-700 mb-1">Categoría</label>
                 <select id="category-select" name="category" required 
                         class="form-control-custom">
-                    <!-- Las opciones se cargarán dinámicamente con AJAX (Encadenamiento de Promesas) -->
                     <option value="" disabled selected>Cargando categorías...</option>
                 </select>
             </div>
-            
-            <!-- Campo de Descripción -->
+
             <div>
-                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Descripción Detallada</label>
+                <label for="description" class="block text-sm font-bold text-gray-700 mb-1">Descripción Detallada</label>
                 <textarea id="description" name="description" rows="5" required 
-                          class="form-control-custom" placeholder="Detalle el problema, incluyendo ubicación y tiempo del incidente..."></textarea>
+                            class="form-control-custom" placeholder="Detalle el problema, incluyendo ubicación y tiempo del incidente..."></textarea>
             </div>
             
-            <!-- Bloque de Contacto Opcional/Anónimo -->
-            <div class="border p-4 rounded-xl bg-gray-50 space-y-4">
-                <h3 class="text-lg font-semibold text-gray-800">Datos de Contacto (Opcional)</h3>
-                <p class="text-sm text-gray-600">Dejar esto vacío resulta en una queja anónima.</p>
+            <div class="border border-gray-200 p-6 rounded-2xl bg-gray-50 space-y-4 shadow-sm">
+                <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-user-circle text-primary-amber mr-3"></i>Datos de Contacto (Opcional)
+                </h3>
+                <p class="text-sm text-gray-600">Dejar estos campos vacíos resulta en un reporte completamente anónimo.</p>
 
                 <input type="text" id="reporter_name" name="reporter_name" 
-                       class="form-control-custom" placeholder="Su Nombre (Opcional)">
+                        class="form-control-custom" placeholder="Su Nombre (Opcional)">
                 <input type="email" id="reporter_email" name="reporter_email" 
-                       class="form-control-custom" placeholder="Correo Electrónico (Opcional)">
+                        class="form-control-custom" placeholder="Correo Electrónico (Opcional)">
                 <input type="tel" id="reporter_phone" name="reporter_phone" 
-                       class="form-control-custom" placeholder="Teléfono (Opcional)">
+                        class="form-control-custom" placeholder="Teléfono (Opcional)">
             </div>
             
-            <!-- Campo de Adjuntos (Archivos) -->
             <div>
-                <label for="file-input" class="block text-sm font-medium text-gray-700 mb-1">Adjuntar Evidencia (Opcional)</label>
+                <label for="file-input" class="block text-sm font-bold text-gray-700 mb-1">Adjuntar Evidencia (Opcional)</label>
                 <input type="file" id="file-input" name="file" multiple
-                       class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 transition duration-150">
-                <p class="text-xs text-gray-500 mt-1">Máximo 5 archivos (Imágenes o documentos).</p>
+                        class="w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-base file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200 transition duration-300">
+                <p class="text-xs text-gray-500 mt-1">Puede adjuntar hasta 5 archivos (Imágenes o documentos) a la vez.</p>
             </div>
 
 
-            <!-- Botón de Envío -->
             <button type="submit" id="submit-btn" 
-                    class="submit-btn w-full py-3 rounded-xl text-lg font-bold shadow-lg flex items-center justify-center">
+                class="w-full py-4 rounded-xl text-xl font-extrabold shadow-lg flex items-center justify-center 
+                    bg-primary-amber text-white hover:bg-amber-700 transition duration-150">
                 <i id="loading-spinner" class="fas fa-spinner fa-spin mr-3 hidden"></i>
                 Enviar Queja
             </button>
@@ -121,12 +117,40 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     // Definición de URL base de la API (asumimos que está en el mismo host)
-    const BASE_URL = '/api/'; 
+    // NOTA: Es común que Django añada el prefijo de la app (ej: /quejas/api/), si tienes problemas 
+    // con la ruta, prueba a usar solo '/api/' si el archivo urls.py está configurado así en el proyecto principal.
+    const BASE_URL = '/quejas/api/'; 
     const form = document.getElementById('new-complaint-form');
     const categorySelect = document.getElementById('category-select');
     const submitBtn = document.getElementById('submit-btn');
     const loadingSpinner = document.getElementById('loading-spinner');
     const messageContainer = document.getElementById('message-container');
+
+    // -----------------------------------------------------------------
+    // Función para obtener el token CSRF de la cookie
+    // -----------------------------------------------------------------
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+                // Manejo de la cookie sin el prefijo 'csrftoken'
+                if (cookie.startsWith('csrf_token=')) { 
+                    cookieValue = decodeURIComponent(cookie.substring('csrf_token='.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value || getCookie('csrftoken');
+
 
     /**
      * Función para mostrar mensajes de feedback (éxito o error).
@@ -136,16 +160,17 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function showMessage(type, message, duration = 5000) {
         const isSuccess = type === 'success';
-        const colorClass = isSuccess ? 'bg-green-100 border-green-400 text-green-700' : 'bg-red-100 border-red-400 text-red-700';
+        // CAMBIO UI: Clases más específicas para mejor impacto visual
+        const colorClass = isSuccess ? 'bg-green-50 border-green-500 text-green-700' : 'bg-red-50 border-red-500 text-red-700';
         const icon = isSuccess ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle';
         const title = isSuccess ? '¡Éxito!' : 'Error:';
 
         messageContainer.innerHTML = `
-            <div class="${colorClass} px-4 py-3 rounded-xl border relative" role="alert">
+            <div class="${colorClass} px-4 py-3 rounded-xl border relative shadow-md animate-pulse-once" role="alert">
                 <div class="flex items-center">
                     <i class="${icon} mr-3 text-xl"></i>
                     <div>
-                        <strong class="font-bold">${title}</strong>
+                        <strong class="font-extrabold">${title}</strong>
                         <span class="block sm:inline ml-2">${message}</span>
                     </div>
                 </div>
@@ -163,32 +188,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // PETICIÓN DEPENDIENTE (Encadenamiento de Promesas)
     // 1. Cargar categorías -> 2. Poblar el selector
     // =================================================================
-    function loadCategories() {
+    async function loadCategories() {
         console.log("Cargando categorías...");
-        // Usando encadenamiento de promesas
-        fetch(BASE_URL + 'categories/')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('No se pudieron cargar las categorías: ' + response.statusText);
-                }
-                return response.json();
-            })
-            .then(categories => {
-                // Limpiar el selector y poblar con datos
-                categorySelect.innerHTML = '<option value="" disabled selected>Seleccione una Categoría</option>';
-                categories.forEach(category => {
-                    const option = document.createElement('option');
-                    option.value = category.id;
-                    option.textContent = category.name;
-                    categorySelect.appendChild(option);
-                });
-                console.log("Categorías cargadas:", categories.length);
-            })
-            .catch(error => {
-                console.error("Error al cargar categorías:", error);
-                categorySelect.innerHTML = '<option value="" disabled>Error al cargar categorías</option>';
-                showMessage('error', 'No se pudieron cargar las categorías. Intente recargar la página.');
+        try {
+            const response = await fetch(BASE_URL + 'categories/');
+            if (!response.ok) {
+                throw new Error('No se pudieron cargar las categorías: ' + response.statusText);
+            }
+            const categories = await response.json();
+            
+            // Limpiar el selector y poblar con datos
+            categorySelect.innerHTML = '<option value="" disabled selected>Seleccione una Categoría</option>';
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.name;
+                categorySelect.appendChild(option);
             });
+            console.log("Categorías cargadas:", categories.length);
+        } catch (error) {
+            console.error("Error al cargar categorías:", error);
+            categorySelect.innerHTML = '<option value="" disabled>Error al cargar categorías</option>';
+            showMessage('error', 'No se pudieron cargar las categorías. Intente recargar la página.');
+        }
     }
 
     // =================================================================
@@ -201,6 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Mostrar carga y deshabilitar botón
         submitBtn.disabled = true;
         submitBtn.classList.add('bg-gray-400');
+        submitBtn.classList.remove('bg-amber-600', 'hover:bg-amber-700', 'active:bg-amber-800'); // Quitar estilos de ámbar
         loadingSpinner.classList.remove('hidden');
         messageContainer.innerHTML = ''; // Limpiar mensajes anteriores
 
@@ -208,15 +231,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData(form);
         const complaintData = {};
         
-        // Mapear los campos de la queja (excluir 'file')
+        // Mapear los campos de la queja (excluir 'file' y convertir 'category' a número)
         for (let [key, value] of formData.entries()) {
-            if (key !== 'file' && key !== 'category' && value) {
-                complaintData[key] = value;
+             // Excluir 'file' y 'csrfmiddlewaretoken' del JSON
+            if (key !== 'file' && key !== 'csrfmiddlewaretoken' && value) {
+                complaintData[key] = key === 'category' ? parseInt(value) : value;
             }
         }
-        // Asegurar que category sea un número entero
-        complaintData['category'] = parseInt(formData.get('category'));
-        
 
         try {
             // 1. Petición para CREAR la Queja
@@ -224,8 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // Nota: Asume que las credenciales de autenticación (ej. token CSRF) se manejan por cookies o están desactivadas para este endpoint.
-                    // Si se requiere CSRF, se debe obtener el token de un campo oculto o cookie.
+                    'X-CSRFToken': csrftoken 
                 },
                 body: JSON.stringify(complaintData)
             });
@@ -248,21 +268,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     const file = files[i];
                     const fileFormData = new FormData();
                     fileFormData.append('file', file);
-                    // Asignamos la queja creada
-                    fileFormData.append('complaint', complaintId); 
+                    // No es necesario añadir 'complaint' aquí si el ViewSet lo infiere, 
+                    // pero es una buena práctica si el serializer lo requiere.
 
-                    // Enviamos el adjunto a la ruta anidada: /api/complaints/{id}/attachments/
+                    // La ruta anidada no requiere el header 'Content-Type': 'application/json' 
+                    // ya que se está subiendo un archivo (multipart/form-data).
                     const uploadResponse = await fetch(`${BASE_URL}complaints/${complaintId}/attachments/`, {
                         method: 'POST',
+                        // Omitir Content-Type para FormData
+                        headers: {
+                            'X-CSRFToken': csrftoken // 👈 El token CSRF SI es necesario
+                        },
                         body: fileFormData
-                        // Nota: Fetch con FormData NO requiere 'Content-Type': 'application/json'. 
-                        // El navegador establece automáticamente 'multipart/form-data'.
                     });
 
                     if (!uploadResponse.ok) {
                         console.error(`Error al subir archivo ${file.name}:`, await uploadResponse.json());
                         uploadSuccess = false;
-                        // Continuamos con el resto de archivos, pero marcamos como fallo
+                        // Continuamos con el resto de archivos
                     }
                 }
             }
@@ -284,6 +307,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Error completo en la operación:", error);
             // Asegurar que el mensaje de error es legible
             let displayError = error.message.includes(":") ? error.message.split(":")[1].trim() : error.message;
+            // Manejo de casos específicos de DRF para mejorar el mensaje
+            if (displayError.includes("Este campo es requerido")) displayError = "Verifique que todos los campos obligatorios estén llenos.";
             if (displayError.length > 100) displayError = 'Error detallado. Revise la consola para más información.';
             showMessage('error', `No se pudo completar el reporte. ${displayError}`);
             
@@ -291,6 +316,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Ocultar carga y re-habilitar botón
             loadingSpinner.classList.add('hidden');
             submitBtn.disabled = false;
+            // Restaurar estilos de ámbar
+            submitBtn.classList.add('bg-amber-600', 'hover:bg-amber-700', 'active:bg-amber-800');
             submitBtn.classList.remove('bg-gray-400');
         }
     });
@@ -302,195 +329,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-=======
-    <title>Nueva Queja - Sistema de Quejas</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
-        header {
-            background-color: #ff6a00;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-            z-index: 1;
-        }
-        header h1 {
-            font-size: 1.8rem;
-            color: #000;
-            margin: 0;
-            font-weight: bold;
-        }
-        .form-container {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 80vh;
-            padding-top: 20px;
-        }
-        .form-box {
-            background-color: #e0e0e0;
-            padding: 40px;
-            border-radius: 15px;
-            display: flex;
-            flex-direction: row;
-            gap: 40px;
-            min-width: 600px;
-            max-width: 800px;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-        }
-        .form-left, .form-right {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        .form-group {
-            width: 100%;
-            max-width: 300px;
-        }
-        .form-group label {
-            font-size: 1.1rem;
-            color: #333;
-            margin-bottom: 5px;
-            display: block;
-        }
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 1rem;
-            background-color: #fff;
-        }
-        .form-group textarea {
-            height: 100px;
-            resize: vertical;
-        }
-        .evidence-box {
-            display: flex;
-            gap: 25px;
-            align-items: center;
-            flex-wrap: nowrap;
-        }
-        .evidence-item {
-            width: 120px;
-            height: 60px;
-            background-color: #000;
-            border: 2px solid #000;
-            border-radius: 5px;
-        }
-        .add-evidence {
-            font-size: 2rem;
-            color: #000;
-            cursor: pointer;
-            padding: 12px;
-            background-color: #ddd;
-            border-radius: 50%;
-        }
-        .type-box {
-            background-color: #ff6a00;
-            padding: 20px;
-            border-radius: 10px;
-            width: 200px;
-        }
-        .type-box label {
-            font-size: 1.1rem;
-            color: #000;
-            margin-bottom: 15px;
-            display: block;
-        }
-        .type-box div {
-            margin-bottom: 15px;
-        }
-        .type-box input[type="checkbox"] {
-            margin-right: 10px;
-        }
-        .submit-btn {
-            background-color: #ff6a00;
-            color: #000;
-            border: none;
-            padding: 14px 35px;
-            border-radius: 25px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            width: 100%;
-            max-width: 280px;
-            margin-top: 25px;
-            transition: 0.3s;
-        }
-        .submit-btn:hover {
-            background-color: #e55b00;
-        }
-    </style>
-</head>
-<body>
-
-<header>
-    <a href="{% url 'menu' %}" class="back-btn"><i class="bi bi-arrow-left-circle"></i></a>
-    <h1>Nueva queja</h1>
-    <button type="submit" form="queja-form" class="icono-login"><i class="bi bi-check-circle"></i></button>
-</header>
-
-<div class="form-container">
-    <div class="form-box">
-        <div class="form-left">
-            <div class="form-group">
-                <label for="nombre">Nombre:</label>
-                <input type="text" id="nombre" name="nombre" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="correo">Correo:</label>
-                <input type="email" id="correo" name="correo" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="descripcion">Descripción:</label>
-                <textarea id="descripcion" name="descripcion" class="form-control" rows="4" required></textarea>
-            </div>
-            <div class="form-group">
-                <label>Evidencia:</label>
-                <div class="evidence-box">
-                    <div class="evidence-item" data-file="img1"></div>
-                    <div class="evidence-item" data-file="vid1"></div>
-                    <span class="add-evidence">+</span>
-                </div>
-            </div>
-        </div>
-        <div class="form-right">
-            <div class="type-box">
-                <label>Tipo de queja:</label>
-                <div>
-                    <input type="checkbox" id="tipo1" name="tipo" value="tipo1" >
-                    <label for="tipo1">tipo1</label>
-                </div>
-                <div>
-                    <input type="checkbox" id="tipo2" name="tipo" value="tipo2" >
-                    <label for="tipo2">tipo2</label>
-                </div>
-                <div>
-                    <input type="checkbox" id="tipo3" name="tipo" value="tipo3" >
-                    <label for="tipo3">tipo3</label>
-                </div>
-                <div>
-                    <input type="checkbox" id="tipo4" name="tipo" value="tipo4" >
-                    <label for="tipo4">tipo4</label>
-                </div>
-            </div>
-            <button type="submit" class="submit-btn">Enviar</button>
-        </div>
-    </form>
-    </div>
-</div>
-
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-
-</body>
-</html>
->>>>>>> 3ce2017e0f2a333ed18b44f48471c15041a6cb49

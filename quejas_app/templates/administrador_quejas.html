@@ -1,12 +1,8 @@
-<<<<<<< HEAD
 {% load static %}
-=======
->>>>>>> 3ce2017e0f2a333ed18b44f48471c15041a6cb49
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-<<<<<<< HEAD
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administrar Quejas - Sistema de Quejas</title>
     
@@ -100,7 +96,30 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const BASE_URL = '/api/'; 
+    
+    // =================================================================
+    // 🚨 PASO 1: FUNCIÓN PARA OBTENER EL TOKEN CSRF DE LAS COOKIES
+    // =================================================================
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    const csrftoken = getCookie('csrftoken'); // 🚨 PASO 2: GUARDAR EL TOKEN
+    
+    // -----------------------------------------------------------------
+    
+    const BASE_URL = '/quejas/api/'; 
     const complaintsAdminList = document.getElementById('complaints-admin-list');
     const loadingSpinner = document.getElementById('loading-spinner-admin');
     const messageContainer = document.getElementById('message-container');
@@ -150,8 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return `
             <div class="bg-white p-5 rounded-xl shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 
-                        border-l-4 ${statusData.class.replace('status-', 'border-')} hover:shadow-xl transition duration-200"
-                 data-complaint-id="${complaint.id}" data-current-status="${complaint.status}">
+                         border-l-4 ${statusData.class.replace('status-', 'border-')} hover:shadow-xl transition duration-200"
+                      data-complaint-id="${complaint.id}" data-current-status="${complaint.status}">
                 
                 <div class="queja-details flex-grow">
                     <span class="text-xl font-bold text-gray-900">QUEJA${complaint.id}: ${complaint.title}</span>
@@ -160,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 
                 <div class="action-buttons flex items-center gap-3 mt-3 sm:mt-0 flex-shrink-0">
-                    <!-- Selector de Estado de Edición -->
                     <select class="status-select form-control-custom text-sm font-semibold p-2" data-id="${complaint.id}">
                         <option value="new" ${complaint.status === 'new' ? 'selected' : ''}>Nueva</option>
                         <option value="in_progress" ${complaint.status === 'in_progress' ? 'selected' : ''}>En Progreso</option>
@@ -229,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =================================================================
-    // PETICIÓN PATCH (Async/Await)
+    // PETICIÓN PATCH (Async/Await) - CORREGIDA
     // Modificar el Estado de la Queja
     // =================================================================
     async function updateComplaintStatus(id, newStatus) {
@@ -242,6 +260,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
+                    // 🚨 CORRECCIÓN CLAVE: Agregando el token CSRF
+                    'X-CSRFToken': csrftoken, 
                     // Asume autenticación de staff activa
                 },
                 body: JSON.stringify({ status: newStatus })
@@ -281,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // =================================================================
-    // PETICIÓN DELETE (Async/Await) - Para Admin
+    // PETICIÓN DELETE (Async/Await) - CORREGIDA
     // =================================================================
     async function deleteComplaintAdmin(id) {
         if (!confirm(`[ADMIN] ¿Está seguro de eliminar la queja ID ${id}?`)) {
@@ -295,6 +315,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`${BASE_URL}complaints/${id}/`, {
                 method: 'DELETE',
                 headers: {
+                    // 🚨 CORRECCIÓN CLAVE: Agregando el token CSRF
+                    'X-CSRFToken': csrftoken,
                     // Asume manejo de autenticación de staff
                 }
             });
@@ -352,155 +374,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-=======
-    <title>Administrar Quejas - Sistema de Quejas</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f8f9fa;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
-        header {
-            background-color: #ff6a00;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 0 0 10px 10px;
-        }
-        header h1 {
-            font-size: 1.8rem;
-            color: #000;
-            margin: 0;
-            font-weight: bold;
-        }
-        .back-btn {
-            font-size: 1.5rem;
-            color: #000;
-            text-decoration: none;
-        }
-        .quejas-container {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 80vh;
-            padding-top: 20px;
-        }
-        .quejas-box {
-            width: 100%;
-            max-width: 700px;
-            padding: 20px;
-        }
-        .queja-item {
-            background-color: #e0e0e0;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: 0.3s;
-        }
-        .queja-item.selected {
-            background-color: #d9d9d9;
-        }
-        .queja-details {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        .queja-item span {
-            font-size: 1.1rem;
-            color: #333;
-        }
-        .queja-item p {
-            font-size: 0.9rem;
-            color: #555;
-            margin: 0;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .minus-btn, .edit-btn {
-            font-size: 1.2rem;
-            color: #000;
-            cursor: pointer;
-            background: none;
-            border: none;
-            padding: 0;
-            margin: 0;
-        }
-        .estado {
-            background-color: #ddd;
-            padding: 5px 15px;
-            border-radius: 15px;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-        }
-        .estado.red {
-            color: #ff0000;
-        }
-        .estado.green {
-            color: #00ff00;
-        }
-        .estado.blue {
-            color: #0000ff;
-        }
-    </style>
-</head>
-<body>
-
-<header>
-    <a href="{% url 'menu' %}" class="back-btn"><i class="bi bi-arrow-left-circle"></i></a>
-    <h1>Administrar Quejas</h1>
-    <div></div> 
-</header>
-
-<div class="quejas-container">
-    <div class="quejas-box">
-        <div class="queja-item">
-            <div class="queja-details">
-                <span>QUEJA1</span>
-                <p>Descripción de la queja 1</p>
-            </div>
-            <div class="action-buttons">
-                <button class="minus-btn">-</button>
-                <button class="edit-btn"><i class="bi bi-pencil"></i></button>
-                <div class="estado red">PENDIENTE</div>
-            </div>
-        </div>
-        <div class="queja-item selected">
-            <div class="queja-details">
-                <span>QUEJA2</span>
-                <p>Descripción de la queja 2</p>
-            </div>
-            <div class="action-buttons">
-                <button class="minus-btn">-</button>
-                <button class="edit-btn"><i class="bi bi-pencil"></i></button>
-                <div class="estado green">RESUELTA</div>
-            </div>
-        </div>
-        <div class="queja-item">
-            <div class="queja-details">
-                <span>QUEJA3</span>
-                <p>Descripción de la queja 3</p>
-            </div>
-            <div class="action-buttons">
-                <button class="minus-btn">-</button>
-                <button class="edit-btn"><i class="bi bi-pencil"></i></button>
-                <div class="estado blue">EN PROCESO</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-
-</body>
-</html>
->>>>>>> 3ce2017e0f2a333ed18b44f48471c15041a6cb49

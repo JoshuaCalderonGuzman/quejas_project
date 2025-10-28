@@ -1,18 +1,12 @@
-<<<<<<< HEAD
 {% load static %}
-=======
->>>>>>> 3ce2017e0f2a333ed18b44f48471c15041a6cb49
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-<<<<<<< HEAD
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis Quejas - Sistema de Quejas</title>
     
-    <!-- Tailwind CSS para diseño y responsividad -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome para iconos modernos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     
     <style>
@@ -28,23 +22,27 @@
             background-color: #ff8c00; 
         }
         
-        /* Definición de colores de estado personalizados */
-        .status-nuevo {
+        /* =========================================================
+        1. Definición de colores de estado personalizados (Badge)
+        =========================================================
+        * Se renombran a las claves del backend (new, in-progress, etc.)
+        */
+        .status-new { /* Nuevo */
             background-color: #ffedd5; /* Ámbar claro */
             color: #d97706; /* Ámbar oscuro */
             border: 1px solid #d97706;
         }
-        .status-proceso {
+        .status-in-progress { /* En Progreso */
             background-color: #eff6ff; /* Azul claro */
             color: #2563eb; /* Azul oscuro */
             border: 1px solid #60a5fa;
         }
-        .status-resuelto {
+        .status-resolved { /* Resuelta */
             background-color: #d1fae5; /* Verde claro */
             color: #059669; /* Verde oscuro */
             border: 1px solid #34d399;
         }
-        .status-rechazado {
+        .status-rejected { /* Rechazada */
             background-color: #fee2e2; /* Rojo claro */
             color: #ef4444; /* Rojo oscuro */
             border: 1px solid #f87171;
@@ -53,12 +51,22 @@
         .estado {
             @apply text-xs font-bold uppercase py-1 px-3 rounded-full tracking-wider whitespace-nowrap;
         }
+        
+        /* =========================================================
+        2. Clases para los Bordes Dinámicos (Se aplicarán al item)
+        =========================================================
+        * Estos colores son más intensos para que resalten como borde.
+        * Se usa la convención 'border-status-KEY' para mayor claridad.
+        */
+        .border-status-new { border-color: #ff8c00; } /* Ámbar principal */
+        .border-status-in-progress { border-color: #2563eb; } /* Azul oscuro */
+        .border-status-resolved { border-color: #059669; } /* Verde oscuro */
+        .border-status-rejected { border-color: #ef4444; } /* Rojo oscuro */
 
     </style>
 </head>
 <body class="bg-gray-100">
 
-<!-- CABECERA FIJA Y FUNCIONAL (Fondo Ámbar Principal) -->
 <header class="p-4 flex justify-between items-center bg-primary-amber shadow-md">
     <a href="{% url 'menu' %}" class="text-white text-2xl font-bold hover:underline">
         <i class="fas fa-chevron-left mr-2"></i>Mis Quejas
@@ -70,25 +78,21 @@
     <div class="max-w-4xl mx-auto">
         <h2 class="text-3xl font-extrabold text-gray-800 mb-6">Mis Quejas Reportadas</h2>
         
-        <!-- Contenedor de mensajes de feedback -->
         <div id="message-container" class="mb-4"></div>
         
-        <!-- Contenedor de la lista de quejas (se llenará con JS) -->
         <div id="complaints-list" class="space-y-4">
-            <!-- Spinner de carga -->
             <div id="loading-spinner-list" class="text-center p-10 text-gray-500">
                 <i class="fas fa-spinner fa-spin text-4xl mb-3"></i>
                 <p>Cargando sus quejas...</p>
             </div>
-            <!-- Lista de quejas se insertará aquí -->
-        </div>
+            </div>
         
     </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const BASE_URL = '/api/'; 
+    const BASE_URL = '/quejas/api/'; 
     const complaintsList = document.getElementById('complaints-list');
     const loadingSpinner = document.getElementById('loading-spinner-list');
     const messageContainer = document.getElementById('message-container');
@@ -125,13 +129,21 @@ document.addEventListener('DOMContentLoaded', () => {
      * Genera el HTML de una única queja.
      */
     function createComplaintHtml(complaint) {
-        const statusClass = `status-${complaint.status.toLowerCase().replace('_', '-')}`;
+        // Genera la clave del estado en minúsculas y con guiones (ej. 'new', 'in-progress')
+        const statusKey = complaint.status.toLowerCase().replace('_', '-');
+        
+        // Clase para el badge de estado (ej. status-new)
+        const statusClass = `status-${statusKey}`;
+        
+        // Clase para el borde izquierdo (ej. border-status-new)
+        const borderClass = `border-status-${statusKey}`; 
+
         const reporterDisplay = complaint.reporter_username || complaint.reporter_name || 'Anónimo';
 
         return `
             <div class="queja-item bg-white p-5 rounded-xl shadow-md flex justify-between items-center gap-4 
-                        border-l-4 border-amber-500 hover:shadow-lg transition duration-200" 
-                 data-complaint-id="${complaint.id}">
+                        border-l-4 ${borderClass} hover:shadow-lg transition duration-200" 
+                    data-complaint-id="${complaint.id}">
                 
                 <div class="flex items-center gap-3 flex-grow min-w-0">
                     <i class="fas fa-exclamation-triangle text-xl text-amber-500 flex-shrink-0"></i>
@@ -262,134 +274,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-=======
-    <title>Mis Quejas - Sistema de Quejas</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f8f9fa;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
-        header {
-            background-color: #ff6a00;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 0 0 10px 10px;
-        }
-        header h1 {
-            font-size: 1.8rem;
-            color: #000;
-            margin: 0;
-            font-weight: bold;
-        }
-        .back-btn {
-            font-size: 1.5rem;
-            color: #000;
-            text-decoration: none;
-        }
-        .quejas-container {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 80vh;
-            padding-top: 20px;
-        }
-        .quejas-box {
-            width: 100%;
-            max-width: 500px;
-            padding: 20px;
-        }
-        .queja-item {
-            background-color: #e0e0e0;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: 0.3s;
-        }
-        .queja-item.selected {
-            background-color: #d9d9d9;
-        }
-        .queja-item span {
-            font-size: 1.1rem;
-            color: #333;
-        }
-        .estado-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .minus-btn {
-            font-size: 1.2rem;
-            color: #000;
-            cursor: pointer;
-            background: none;
-            border: none;
-            padding: 0;
-            margin: 0;
-        }
-        .estado {
-            background-color: #ddd;
-            padding: 5px 15px;
-            border-radius: 15px;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-        }
-        .estado.red {
-            color: #ff0000;
-        }
-        .estado.green {
-            color: #00ff00;
-        }
-        .estado.blue {
-            color: #0000ff;
-        }
-    </style>
-</head>
-<body>
-
-<header>
-    <a href="{% url 'menu' %}" class="back-btn"><i class="bi bi-arrow-left-circle"></i></a>
-    <h1>Mis quejas</h1>
-    <div></div> 
-</header>
-
-<div class="quejas-container">
-    <div class="quejas-box">
-        <div class="queja-item">
-            <span>QUEJA1</span>
-            <div class="estado-container">
-                <button class="minus-btn">-</button>
-                <div class="estado red">ESTADO</div>
-            </div>
-        </div>
-        <div class="queja-item selected">
-            <span>QUEJA2</span>
-            <div class="estado-container">
-                <button class="minus-btn">-</button>
-                <div class="estado green">ESTADO</div>
-            </div>
-        </div>
-        <div class="queja-item">
-            <span>QUEJA3</span>
-            <div class="estado-container">
-                <button class="minus-btn">-</button>
-                <div class="estado blue">ESTADO</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-
-</body>
-</html>
->>>>>>> 3ce2017e0f2a333ed18b44f48471c15041a6cb49
