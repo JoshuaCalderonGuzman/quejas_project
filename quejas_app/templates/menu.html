@@ -8,77 +8,102 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    
+
     <style>
-        /* Definimos la fuente Inter para un look moderno */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
         body {
             font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #ff8c00 0%, #ffb300 40%, #ffd54f 100%);
             min-height: 100vh;
-            background-color: #f0f0f0; /* Fondo general */
+            background-attachment: fixed;
         }
-        /* Color principal: Ámbar (similar al FF6A00) */
-        .bg-primary-amber {
-            background-color: #ff8c00; 
+
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease-in-out;
         }
-        .text-primary-amber {
-            color: #ff8c00;
+        .card:hover {
+            transform: translateY(-6px) scale(1.03);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<body class="bg-gray-100">
 
-<header class="p-4 flex justify-between items-center bg-primary-amber text-black shadow-xl sticky top-0 z-10">
-    <h1 class="text-xl md:text-2xl font-extrabold tracking-wide text-white">Sistema de Quejas Municipales</h1>
-    
+<body class="flex flex-col min-h-screen text-gray-800">
+
+<!-- HEADER -->
+<header class="p-5 flex justify-between items-center bg-black/20 text-white shadow-lg backdrop-blur-md sticky top-0 z-10">
+    <h1 class="text-2xl md:text-3xl font-extrabold tracking-wide">
+        <i class="fa-solid fa-city text-yellow-400 mr-2"></i> Sistema de Quejas Municipales
+    </h1>
+
     <a href="{% url 'admin:login' %}" 
-       class="text-3xl p-2 rounded-full hover:bg-black/10 transition duration-300">
-         <i class="fas fa-user-circle text-white"></i>
+       class="text-3xl p-2 rounded-full hover:bg-white/20 transition duration-300">
+        <i class="fas fa-user-circle"></i>
     </a>
 </header>
 
-<div class="flex flex-col items-center justify-center min-h-[85vh] p-4">
-    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-10 text-center">¿Qué deseas hacer?</h2>
-    
+<!-- MAIN CONTENT -->
+<main class="flex-grow flex flex-col items-center justify-center py-16 fade-in">
+
+    <h2 class="text-4xl md:text-5xl font-extrabold text-white drop-shadow-md mb-12 text-center">
+        ¿Qué deseas hacer hoy?
+    </h2>
+
     {% if user.is_staff %}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-5xl mx-auto">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 w-full max-w-6xl px-6">
     {% else %}
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-2xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 w-full max-w-3xl px-6">
     {% endif %}
-    
+
+        <!-- Nueva Queja -->
         <a href="{% url 'nueva_queja' %}" 
-           class="bg-white p-8 rounded-2xl shadow-xl border-t-4 border-primary-amber 
-                  flex flex-col items-center text-center space-y-4 cursor-pointer
-                  hover:shadow-2xl hover:bg-amber-50 hover:scale-[1.03] transition duration-300">
+           class="card p-10 rounded-2xl border-t-4 border-amber-500 
+                  flex flex-col items-center text-center space-y-4 cursor-pointer">
             
-            <i class="fas fa-file-circle-plus text-6xl text-primary-amber"></i>
-            <h3 class="text-xl font-bold text-gray-900">Nueva Queja</h3>
-            <p class="text-gray-600">Reporta un problema o incidente en la municipalidad.</p>
+            <i class="fas fa-file-circle-plus text-6xl text-amber-500"></i>
+            <h3 class="text-2xl font-bold">Nueva Queja</h3>
+            <p class="text-gray-600 text-sm md:text-base">Reporta un problema o incidente en la municipalidad.</p>
         </a>
-        
+
+        <!-- Revisar Quejas -->
         <a href="{% url 'mis_quejas' %}" 
-           class="bg-white p-8 rounded-2xl shadow-xl border-t-4 border-primary-amber 
-                  flex flex-col items-center text-center space-y-4 cursor-pointer
-                  hover:shadow-2xl hover:bg-amber-50 hover:scale-[1.03] transition duration-300">
+           class="card p-10 rounded-2xl border-t-4 border-green-500 
+                  flex flex-col items-center text-center space-y-4 cursor-pointer">
             
-            <i class="fas fa-magnifying-glass-chart text-6xl text-primary-amber"></i>
-            <h3 class="text-xl font-bold text-gray-900">Revisar Quejas</h3>
-            <p class="text-gray-600">Consulta el estado y seguimiento de tus reportes.</p>
+            <i class="fas fa-magnifying-glass-chart text-6xl text-green-500"></i>
+            <h3 class="text-2xl font-bold">Revisar Quejas</h3>
+            <p class="text-gray-600 text-sm md:text-base">Consulta el estado y seguimiento de tus reportes.</p>
         </a>
 
         {% if user.is_staff %}
+        <!-- Administrar Quejas -->
         <a href="{% url 'administrador_quejas' %}" 
-           class="bg-white p-8 rounded-2xl shadow-xl border-t-4 border-red-600 
-                  flex flex-col items-center text-center space-y-4 cursor-pointer
-                  hover:shadow-2xl hover:bg-red-50 hover:scale-[1.03] transition duration-300">
+           class="card p-10 rounded-2xl border-t-4 border-red-600 
+                  flex flex-col items-center text-center space-y-4 cursor-pointer">
             
             <i class="fas fa-user-shield text-6xl text-red-600"></i>
-            <h3 class="text-xl font-bold text-gray-900">Administrar Quejas</h3>
-            <p class="text-gray-600">Acceso a la gestión y moderación de todos los reportes.</p>
+            <h3 class="text-2xl font-bold">Administrar Quejas</h3>
+            <p class="text-gray-600 text-sm md:text-base">Gestiona y modera todos los reportes de la comunidad.</p>
         </a>
         {% endif %}
-        
-    </div> </div>
+    </div>
+</main>
+
+<!-- FOOTER -->
+<footer class="text-center text-white py-4 bg-black/30 backdrop-blur-md mt-auto text-sm">
+    © 2025 Sistema de Quejas Municipales · Desarrollado con <i class="fa-solid fa-heart text-red-400"></i>
+</footer>
 
 </body>
 </html>

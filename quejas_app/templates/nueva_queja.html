@@ -2,169 +2,226 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nueva Queja - Sistema de Quejas</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    
-    <style>
-        /* Definimos la fuente Inter para un look moderno */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-        body { 
-            font-family: 'Inter', sans-serif; 
-            min-height: 100vh;
-            /* CAMBIO UI: Fondo más contrastado */
-            background-color: #e5e7eb; /* Gris 200 */ 
-        }
-        /* Estilos personalizados para los campos de formulario: más suaves y con efecto de profundidad */
-        .form-control-custom {
-            /* @apply se expande a las clases de Tailwind */
-           @apply w-4/5 p-3 border border-gray-300 rounded-xl shadow-inner bg-gray-50
-                focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition duration-200;
-        }
-        /* Estilos para el botón de envío */
-        .submit-btn {
-            /* CAMBIO UI: Añadir un efecto de elevación (shadow) más fuerte y escala al hacer hover */
-            @apply bg-amber-600 text-white font-extrabold shadow-xl hover:bg-amber-700 active:bg-amber-800 
-                   hover:shadow-2xl hover:scale-[1.01] transition duration-200 ease-in-out;
-        }
-        /* Color principal: Ámbar (similar al FF6A00) */
-        .bg-primary-amber {
-            background-color: #ff8c00; 
-        }
-        .text-primary-amber {
-            color: #ff8c00;
-        }
-        .text-feedback-success { color: #10B981; } /* Esmeralda 500 */
-        .text-feedback-error { color: #EF4444; } /* Rojo 500 */
-    </style>
-</head>
-<body class="bg-gray-100">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nueva Queja - Sistema de Quejas</title>
 
-<header class="p-4 flex items-center bg-primary-amber shadow-xl sticky top-0 z-10">
-    <a href="{% url 'menu' %}" class="text-white text-xl md:text-2xl font-bold hover:opacity-90 transition">
-        <i class="fas fa-arrow-left mr-3"></i>Nueva Queja
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #ff8c00 0%, #ffb300 40%, #ffd54f 100%);
+    background-attachment: fixed;
+    color: #1f2937;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease-in-out;
+}
+.card:hover {
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+.fade-in {
+    animation: fadeIn 0.8s ease-in-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Inputs y textarea flotantes estilo Material */
+.input-container {
+    position: relative;
+    margin-top: 1.5rem;
+}
+.input-container input,
+.input-container textarea,
+.input-container select {
+    width: 100%;
+    padding: 1rem 1rem 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 1rem;
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    outline: none;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    resize: vertical;
+}
+.input-container input:focus,
+.input-container textarea:focus,
+.input-container select:focus {
+    border-color: #ff8c00;
+    box-shadow: 0 0 0 3px rgba(255,140,0,0.2);
+}
+.input-container label {
+    position: absolute;
+    left: 1rem;
+    top: 1rem;
+    color: #6b7280;
+    font-weight: 600;
+    pointer-events: none;
+    transition: all 0.2s ease-out;
+}
+.input-container input:focus + label,
+.input-container input:not(:placeholder-shown) + label,
+.input-container textarea:focus + label,
+.input-container textarea:not(:placeholder-shown) + label,
+.input-container select:focus + label,
+.input-container select:not([value=""]) + label {
+    top: -0.5rem;
+    left: 0.8rem;
+    font-size: 0.8rem;
+    color: #ff8c00;
+    background-color: #ffffff;
+    padding: 0 0.25rem;
+}
+
+/* Botón moderno */
+.submit-btn {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.125rem;
+    font-weight: 800;
+    border-radius: 1.5rem;
+    color: #ffffff;
+    background: linear-gradient(90deg, #ff8c00 0%, #ffb300 100%);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+    transition: all 0.3s ease-in-out;
+}
+.submit-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 12px 20px rgba(0,0,0,0.3);
+}
+.submit-btn:active {
+    transform: translateY(1px) scale(0.98);
+}
+
+/* Spinner dentro del botón */
+#loading-spinner {
+    margin-right: 0.5rem;
+}
+</style>
+</head>
+
+<body class="flex flex-col min-h-screen">
+
+<!-- HEADER -->
+<header class="p-5 flex justify-between items-center bg-black/20 text-white shadow-lg backdrop-blur-md sticky top-0 z-10">
+    <a href="{% url 'menu' %}" class="text-2xl font-bold hover:opacity-90 flex items-center transition">
+        <i class="fas fa-arrow-left mr-2"></i> Regresar
     </a>
+    <h1 class="text-xl md:text-2xl font-extrabold text-white tracking-wide">Nueva Queja</h1>
+    <div class="w-8"></div>
 </header>
 
-<div class="container mx-auto p-4 md:p-8">
-    
-    <div class="max-w-3xl mx-auto bg-white p-6 md:p-10 rounded-3xl shadow-2xl">
-        <h2 class="text-3xl font-extrabold text-gray-800 mb-8 text-center border-b-2 pb-4">Reporte su Queja <i class="text-primary-amber fas fa-lightbulb ml-2"></i></h2>
-        
-        <div id="message-container" class="mb-4">
-        </div>
+<!-- MAIN -->
+<main class="flex-grow flex flex-col items-center justify-center py-12 fade-in">
 
-        <form id="new-complaint-form" class="space-y-6">
-            
-            {% csrf_token %} 
-            
-            <div>
-                <label for="title" class="block text-sm font-bold text-gray-700 mb-1">Título de la Queja</label>
-                <input type="text" id="title" name="title" required 
-                        class="form-control-custom" placeholder="Ej: Falla de semáforo en Av. Central">
-            </div>
+    <div class="max-w-3xl w-full px-6">
+        <div class="card p-10 rounded-3xl shadow-2xl">
+            <h2 class="text-3xl font-extrabold text-gray-800 mb-8 text-center flex justify-center items-center gap-2 border-b-2 pb-4">
+                <i class="fas fa-lightbulb text-primary-amber"></i> Reporte su Queja
+            </h2>
 
-            <div>
-                <label for="category-select" class="block text-sm font-bold text-gray-700 mb-1">Categoría</label>
-                <select id="category-select" name="category" required 
-                        class="form-control-custom">
-                    <option value="" disabled selected>Cargando categorías...</option>
-                </select>
-            </div>
+            <div id="message-container" class="mb-4"></div>
 
-            <div>
-                <label for="description" class="block text-sm font-bold text-gray-700 mb-1">Descripción Detallada</label>
-                <textarea id="description" name="description" rows="5" required 
-                            class="form-control-custom" placeholder="Detalle el problema, incluyendo ubicación y tiempo del incidente..."></textarea>
-            </div>
-            
-            <div class="border border-gray-200 p-6 rounded-2xl bg-gray-50 space-y-4 shadow-sm">
-                <h3 class="text-lg font-bold text-gray-800 flex items-center">
-                    <i class="fas fa-user-circle text-primary-amber mr-3"></i>Datos de Contacto (Opcional)
-                </h3>
-                <p class="text-sm text-gray-600">Dejar estos campos vacíos resulta en un reporte completamente anónimo.</p>
+            <form id="new-complaint-form" class="space-y-6">
+                {% csrf_token %}
 
-                <input type="text" id="reporter_name" name="reporter_name" 
-                        class="form-control-custom" placeholder="Su Nombre (Opcional)">
-                <input type="email" id="reporter_email" name="reporter_email" 
-                        class="form-control-custom" placeholder="Correo Electrónico (Opcional)">
-                <input type="tel" id="reporter_phone" name="reporter_phone" 
-                        class="form-control-custom" placeholder="Teléfono (Opcional)">
-            </div>
-            
-            <div>
-                <label for="file-input" class="block text-sm font-bold text-gray-700 mb-1">Adjuntar Evidencia (Opcional)</label>
-                <input type="file" id="file-input" name="file" multiple
+                <div class="input-container">
+                    <input type="text" id="title" name="title" placeholder=" " required>
+                    <label for="title">Título de la Queja</label>
+                </div>
+
+                <div class="input-container">
+                    <select id="category-select" name="category" placeholder=" " required>
+                        <option value="" disabled selected>Cargando categorías...</option>
+                    </select>
+                    <label for="category-select">Categoría</label>
+                </div>
+
+                <div class="input-container">
+                    <textarea id="description" name="description" rows="5" placeholder=" " required></textarea>
+                    <label for="description">Descripción Detallada</label>
+                </div>
+
+                <div class="card p-6 rounded-2xl bg-gray-50 space-y-4 shadow-sm">
+                    <h3 class="text-lg font-bold flex items-center gap-2">
+                        <i class="fas fa-user-circle text-primary-amber"></i> Datos de Contacto (Opcional)
+                    </h3>
+                    <p class="text-sm text-gray-600">Dejar estos campos vacíos resulta en un reporte anónimo.</p>
+                    <div class="input-container">
+                        <input type="text" id="reporter_name" name="reporter_name" placeholder=" ">
+                        <label for="reporter_name">Su Nombre (Opcional)</label>
+                    </div>
+                    <div class="input-container">
+                        <input type="email" id="reporter_email" name="reporter_email" placeholder=" ">
+                        <label for="reporter_email">Correo Electrónico (Opcional)</label>
+                    </div>
+                    <div class="input-container">
+                        <input type="tel" id="reporter_phone" name="reporter_phone" placeholder=" ">
+                        <label for="reporter_phone">Teléfono (Opcional)</label>
+                    </div>
+                </div>
+
+                <div class="input-container">
+                    <input type="file" id="file-input" name="file" multiple
                         class="w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-base file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200 transition duration-300">
-                <p class="text-xs text-gray-500 mt-1">Puede adjuntar hasta 5 archivos (Imágenes o documentos) a la vez.</p>
-            </div>
+                    <label for="file-input">Adjuntar Evidencia (Opcional)</label>
+                    <p class="text-xs text-gray-500 mt-1">Puede adjuntar hasta 5 archivos (Imágenes o documentos) a la vez.</p>
+                </div>
 
-
-            <button type="submit" id="submit-btn" 
-                class="w-full py-4 rounded-xl text-xl font-extrabold shadow-lg flex items-center justify-center 
-                    bg-primary-amber text-white hover:bg-amber-700 transition duration-150">
-                <i id="loading-spinner" class="fas fa-spinner fa-spin mr-3 hidden"></i>
-                Enviar Queja
-            </button>
-            
-        </form>
+                <button type="submit" id="submit-btn" class="submit-btn flex items-center justify-center">
+                    <i id="loading-spinner" class="fas fa-spinner fa-spin hidden"></i>
+                    Enviar Queja
+                </button>
+            </form>
+        </div>
     </div>
-</div>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="text-center text-white py-4 bg-black/30 backdrop-blur-md mt-auto text-sm">
+    © 2025 Sistema de Quejas Municipales · Desarrollado con <i class="fa-solid fa-heart text-red-400"></i>
+</footer>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // Definición de URL base de la API (asumimos que está en el mismo host)
-    // NOTA: Es común que Django añada el prefijo de la app (ej: /quejas/api/), si tienes problemas 
-    // con la ruta, prueba a usar solo '/api/' si el archivo urls.py está configurado así en el proyecto principal.
-    const BASE_URL = '/quejas/api/'; 
+    const BASE_URL = '/quejas/api/';
     const form = document.getElementById('new-complaint-form');
     const categorySelect = document.getElementById('category-select');
     const submitBtn = document.getElementById('submit-btn');
     const loadingSpinner = document.getElementById('loading-spinner');
     const messageContainer = document.getElementById('message-container');
 
-    // -----------------------------------------------------------------
-    // Función para obtener el token CSRF de la cookie
-    // -----------------------------------------------------------------
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                // Does this cookie string begin with the name we want?
-                if (cookie.startsWith(name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-                // Manejo de la cookie sin el prefijo 'csrftoken'
-                if (cookie.startsWith('csrf_token=')) { 
-                    cookieValue = decodeURIComponent(cookie.substring('csrf_token='.length + 1));
-                    break;
-                }
-            }
+            document.cookie.split(';').forEach(cookie => {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            });
         }
         return cookieValue;
     }
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value || getCookie('csrftoken');
 
-
-    /**
-     * Función para mostrar mensajes de feedback (éxito o error).
-     * @param {string} type - 'success' o 'error'.
-     * @param {string} message - El mensaje a mostrar.
-     * @param {number} duration - Duración en ms antes de ocultar (0 para no ocultar).
-     */
     function showMessage(type, message, duration = 5000) {
         const isSuccess = type === 'success';
-        // CAMBIO UI: Clases más específicas para mejor impacto visual
         const colorClass = isSuccess ? 'bg-green-50 border-green-500 text-green-700' : 'bg-red-50 border-red-500 text-red-700';
         const icon = isSuccess ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle';
         const title = isSuccess ? '¡Éxito!' : 'Error:';
-
         messageContainer.innerHTML = `
             <div class="${colorClass} px-4 py-3 rounded-xl border relative shadow-md animate-pulse-once" role="alert">
                 <div class="flex items-center">
@@ -176,153 +233,55 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
         `;
-
-        if (duration > 0) {
-            setTimeout(() => {
-                messageContainer.innerHTML = '';
-            }, duration);
-        }
+        if (duration > 0) setTimeout(() => messageContainer.innerHTML = '', duration);
     }
-    
-    // =================================================================
-    // PETICIÓN DEPENDIENTE (Encadenamiento de Promesas)
-    // 1. Cargar categorías -> 2. Poblar el selector
-    // =================================================================
+
     async function loadCategories() {
-        console.log("Cargando categorías...");
         try {
             const response = await fetch(BASE_URL + 'categories/');
-            if (!response.ok) {
-                throw new Error('No se pudieron cargar las categorías: ' + response.statusText);
-            }
+            if (!response.ok) throw new Error('No se pudieron cargar las categorías: ' + response.statusText);
             const categories = await response.json();
-            
-            // Limpiar el selector y poblar con datos
             categorySelect.innerHTML = '<option value="" disabled selected>Seleccione una Categoría</option>';
-            categories.forEach(category => {
-                const option = document.createElement('option');
-                option.value = category.id;
-                option.textContent = category.name;
-                categorySelect.appendChild(option);
-            });
-            console.log("Categorías cargadas:", categories.length);
+            categories.forEach(cat => categorySelect.appendChild(new Option(cat.name, cat.id)));
         } catch (error) {
-            console.error("Error al cargar categorías:", error);
             categorySelect.innerHTML = '<option value="" disabled>Error al cargar categorías</option>';
-            showMessage('error', 'No se pudieron cargar las categorías. Intente recargar la página.');
+            showMessage('error', 'No se pudieron cargar las categorías. Recargue la página.');
         }
     }
 
-    // =================================================================
-    // PETICIÓN POST (Async/Await)
-    // 1. Crear Queja (POST) -> 2. Subir Adjuntos (POST)
-    // =================================================================
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        // Mostrar carga y deshabilitar botón
         submitBtn.disabled = true;
-        submitBtn.classList.add('bg-gray-400');
-        submitBtn.classList.remove('bg-amber-600', 'hover:bg-amber-700', 'active:bg-amber-800'); // Quitar estilos de ámbar
         loadingSpinner.classList.remove('hidden');
-        messageContainer.innerHTML = ''; // Limpiar mensajes anteriores
-
-        // Crear objeto FormData para la queja
         const formData = new FormData(form);
         const complaintData = {};
-        
-        // Mapear los campos de la queja (excluir 'file' y convertir 'category' a número)
         for (let [key, value] of formData.entries()) {
-             // Excluir 'file' y 'csrfmiddlewaretoken' del JSON
-            if (key !== 'file' && key !== 'csrfmiddlewaretoken' && value) {
-                complaintData[key] = key === 'category' ? parseInt(value) : value;
-            }
+            if (key !== 'file' && key !== 'csrfmiddlewaretoken' && value) complaintData[key] = key === 'category' ? parseInt(value) : value;
         }
-
         try {
-            // 1. Petición para CREAR la Queja
-            const createResponse = await fetch(BASE_URL + 'complaints/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken 
-                },
-                body: JSON.stringify(complaintData)
+            const response = await fetch(BASE_URL + 'complaints/', {
+                method: 'POST', headers: {'Content-Type':'application/json','X-CSRFToken':csrftoken}, body:JSON.stringify(complaintData)
             });
-
-            if (!createResponse.ok) {
-                const errorData = await createResponse.json();
-                let errorMsg = JSON.stringify(errorData, null, 2).replace(/[{}\"]/g, '').trim();
-                throw new Error(`Error ${createResponse.status}: ${errorMsg}`);
-            }
-
-            const newComplaint = await createResponse.json();
+            if (!response.ok) throw new Error('Error al enviar la queja.');
+            const newComplaint = await response.json();
             const complaintId = newComplaint.id;
-            
-            let uploadSuccess = true;
             const files = document.getElementById('file-input').files;
-
-            // 2. Petición para SUBIR Adjuntos (Si existen)
-            if (files.length > 0) {
-                for (let i = 0; i < files.length; i++) {
-                    const file = files[i];
-                    const fileFormData = new FormData();
-                    fileFormData.append('file', file);
-                    // No es necesario añadir 'complaint' aquí si el ViewSet lo infiere, 
-                    // pero es una buena práctica si el serializer lo requiere.
-
-                    // La ruta anidada no requiere el header 'Content-Type': 'application/json' 
-                    // ya que se está subiendo un archivo (multipart/form-data).
-                    const uploadResponse = await fetch(`${BASE_URL}complaints/${complaintId}/attachments/`, {
-                        method: 'POST',
-                        // Omitir Content-Type para FormData
-                        headers: {
-                            'X-CSRFToken': csrftoken // 👈 El token CSRF SI es necesario
-                        },
-                        body: fileFormData
-                    });
-
-                    if (!uploadResponse.ok) {
-                        console.error(`Error al subir archivo ${file.name}:`, await uploadResponse.json());
-                        uploadSuccess = false;
-                        // Continuamos con el resto de archivos
-                    }
-                }
+            let uploadSuccess = true;
+            for(let file of files){
+                const fd = new FormData();
+                fd.append('file', file);
+                const r = await fetch(`${BASE_URL}complaints/${complaintId}/attachments/`, {method:'POST', headers:{'X-CSRFToken':csrftoken}, body:fd});
+                if(!r.ok) uploadSuccess=false;
             }
-
-            // Mostrar mensaje final de éxito
-            let successMessage = `Queja creada con éxito (ID: ${complaintId}).`;
-            if (files.length > 0) {
-                successMessage += uploadSuccess 
-                    ? ` Todos los ${files.length} adjuntos subidos.`
-                    : ` La queja se creó, pero hubo errores al subir algunos archivos.`;
-            }
-            showMessage('success', successMessage, 8000);
-
-            // Limpiar formulario
-            form.reset();
-            categorySelect.value = ''; // Resetear select
-            
-        } catch (error) {
-            console.error("Error completo en la operación:", error);
-            // Asegurar que el mensaje de error es legible
-            let displayError = error.message.includes(":") ? error.message.split(":")[1].trim() : error.message;
-            // Manejo de casos específicos de DRF para mejorar el mensaje
-            if (displayError.includes("Este campo es requerido")) displayError = "Verifique que todos los campos obligatorios estén llenos.";
-            if (displayError.length > 100) displayError = 'Error detallado. Revise la consola para más información.';
-            showMessage('error', `No se pudo completar el reporte. ${displayError}`);
-            
+            showMessage('success', `Queja creada con éxito (ID: ${complaintId}). ${files.length>0 ? (uploadSuccess?'Todos los archivos subidos.':'Error en algunos archivos.') : ''}`,8000);
+            form.reset(); categorySelect.value='';
+        } catch(error){
+            showMessage('error', `No se pudo completar el reporte. ${error.message}`);
         } finally {
-            // Ocultar carga y re-habilitar botón
-            loadingSpinner.classList.add('hidden');
-            submitBtn.disabled = false;
-            // Restaurar estilos de ámbar
-            submitBtn.classList.add('bg-amber-600', 'hover:bg-amber-700', 'active:bg-amber-800');
-            submitBtn.classList.remove('bg-gray-400');
+            loadingSpinner.classList.add('hidden'); submitBtn.disabled=false;
         }
     });
 
-    // Cargar categorías al inicio (Petición Dependiente)
     loadCategories();
 });
 </script>

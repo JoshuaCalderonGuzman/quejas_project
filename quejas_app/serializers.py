@@ -1,99 +1,98 @@
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
 from .models import Category, Complaint, Comment, Attachment
 
+# Importamos el modelo de usuario para los campos de relación
+from django.contrib.auth import get_user_model
 User = get_user_model()
 
-# ----------------------------------------------------------------------
-# 1. Serializer para Modelos Relacionados Anidados (Lectura)
-# ----------------------------------------------------------------------
 
-class CommentReadOnlySerializer(serializers.ModelSerializer):
-    """
-    Serializador de LECTURA para Comentarios.
-    Usado para anidar información de comentarios dentro de una Queja.
-    """
-    # Determina el nombre del autor a mostrar.
-    author_display = serializers.SerializerMethodField()
-
+# Serializador de Usuario Básico para mostrar el reporter
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Comment
-        # Excluye el campo 'complaint' para evitar redundancia al anidar.
-        exclude = ('complaint',) 
-        
-    def get_author_display(self, obj):
-        """Devuelve el username si hay usuario, sino el campo 'author', sino 'Anónimo'."""
-        return obj.user.username if obj.user else obj.author or 'Anónimo'
+        model = User
+        # Exponemos solo campos seguros y relevantes para la API
+        fields = ('id', 'username', 'first_name', 'last_name')
 
-class AttachmentSerializer(serializers.ModelSerializer):
-    """
-    Serializador para Adjuntos. Se usa para crear, listar y eliminar adjuntos.
-    """
-    class Meta:
-        model = Attachment
-        # Incluye todos los campos, el campo 'file' manejará la subida de archivos.
-        fields = '__all__'
-        read_only_fields = ('uploaded_at', 'complaint') # 'complaint' se establece en la vista.
 
-# ----------------------------------------------------------------------
-# 2. Serializer para Modelos Básicos (CRUD completo)
-# ----------------------------------------------------------------------
-
+# 1. Categoría
 class CategorySerializer(serializers.ModelSerializer):
-    """
-    Serializador para el modelo Category. Permite CRUD completo.
-    """
     class Meta:
         model = Category
-        fields = '__all__' 
+        fields = '__all__'
 
 
-class CommentWriteSerializer(serializers.ModelSerializer):
-    """
-    Serializador de ESCRITURA para Comentarios (POST/PUT/PATCH).
-    Permite establecer los campos necesarios para crear o modificar un comentario.
-    """
+# 2. Adjunto
+class AttachmentSerializer(serializers.ModelSerializer):
+    # Campo de solo lectura para la URL del archivo
+    file_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Attachment
+        # El campo 'complaint' se asigna en la vista, no se requiere en la entrada.
+        fields = ('id', 'file', 'file_url', 'uploaded_at')
+        read_only_fields = ('uploaded_at',)
+
+    def get_file_url(self, obj):
+        # Devuelve la URL absoluta del archivo.
+        if obj.file:
+            return obj.file.url
+        return None
+
+# 3. Comentarios (Solo Lectura)
+class CommentReadOnlySerializer(serializers.ModelSerializer):
+    # Usa el serializador de usuario anidado
+    user = UserSerializer(read_only=True) 
+    
+    # Campo para mostrar quién es el autor (Usuario o Nombre opcional)
+    author_display = serializers.SerializerMethodField()
+    
     class Meta:
         model = Comment
-        # Incluye 'complaint' y 'user', aunque se suelen asignar en la vista
-        # por seguridad al crear, es necesario que existan aquí.
-        fields = ('id', 'complaint', 'user', 'author', 'message', 'public')
+        fields = ('id', 'complaint', 'user', 'author', 'author_display', 'message', 'public', 'created_at')
+        read_only_fields = ('complaint', 'user', 'created_at', 'author_display')
+        
+    def get_author_display(self, obj):
+        # Muestra el nombre del usuario logueado o el campo 'author' si se proporcionó.
+        if obj.user:
+            return obj.user.username 
+        return obj.author or 'Anónimo'
 
-# ----------------------------------------------------------------------
-# 3. Serializer para el Modelo Principal (Complaint - Lectura/Escritura)
-# ----------------------------------------------------------------------
 
+# 4. Comentarios (Escritura)
+class CommentWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        # Solo permitimos que se envíe el mensaje y el autor (si es anónimo)
+        fields = ('message', 'author')
+        # 'complaint', 'user' y 'public' se asignan en la vista (perform_create)
+
+# 5. Queja Principal
 class ComplaintSerializer(serializers.ModelSerializer):
-    """
-    Serializador principal para el modelo Complaint.
-    Incluye campos de solo lectura para la categoría y el reportante.
-    Muestra comentarios anidados (solo lectura).
-    """
-    # Campo de solo lectura para mostrar el nombre de la categoría
-    category_name = serializers.ReadOnlyField(source='category.name') 
+    # Usamos serializadores anidados para campos de relación de solo lectura
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    reporter_username = serializers.CharField(source='reporter.username', read_only=True)
     
-    # Campo de solo lectura para mostrar el username del reportante
-    reporter_username = serializers.SerializerMethodField()
+    # Campos anidados para mostrar relaciones (solo lectura)
+    attachments = AttachmentSerializer(many=True, read_only=True) 
     
-    # Comentarios anidados (solo lectura de los comentarios públicos)
-    comments = CommentReadOnlySerializer(many=True, read_only=True)
-    
-    # Adjuntos anidados (solo lectura)
-    attachments = AttachmentSerializer(many=True, read_only=True)
-
-
     class Meta:
         model = Complaint
-        fields = ('id', 'title', 'description', 
-                  'category', 'category_name', # FK y nombre de la categoría
-                  'reporter', 'reporter_username', # FK y nombre del usuario reportante
-                  'reporter_name', 'reporter_email', 'reporter_phone', 
-                  'status', 'created_at', 'updated_at', 'assigned_to', 
-                  'comments', 'attachments')
-                  
-        # Campos que la API maneja automáticamente o que no deben ser modificados por el cliente.
-        read_only_fields = ('created_at', 'updated_at', 'status')
-        
-    def get_reporter_username(self, obj):
-        """Devuelve el username del reportante si existe, sino None."""
-        return obj.reporter.username if obj.reporter else None
+        fields = (
+            'id', 'reporter', 'reporter_username', 'title', 'description', 
+            'category', 'category_name', 'status', 'assigned_to', 
+            'reporter_name', 'reporter_email', 'reporter_phone', 
+            'created_at', 'updated_at', 'attachments'
+        )
+        # ⚠️ CAMBIO CLAVE: Quitamos 'status' y 'assigned_to' de solo lectura.
+        # Ahora, solo el campo 'reporter' y las fechas son protegidos.
+        # La clase IsStaffOrOwner se encarga de que solo el Staff pueda hacer PATCH en estos campos.
+        read_only_fields = ('reporter', 'created_at', 'updated_at')
+
+    # Validación personalizada para asegurar que la categoría existe si se proporciona.
+    def validate_category(self, value):
+        if value is None:
+            return value
+        # Verifica que la instancia de Category realmente exista.
+        if not Category.objects.filter(pk=value.pk).exists():
+            raise serializers.ValidationError("La categoría seleccionada no existe.")
+        return value
