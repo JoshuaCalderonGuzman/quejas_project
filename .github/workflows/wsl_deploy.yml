@@ -1,0 +1,13 @@
+name: Deploy to WSL
+
+on:
+  push: 
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger WSL deploy script
+        run: curl -X POST $
+{{secrets.WSL_DEPLOY_WEBHOOK}}
