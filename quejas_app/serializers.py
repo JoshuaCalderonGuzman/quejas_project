@@ -83,8 +83,6 @@ class ComplaintSerializer(serializers.ModelSerializer):
             'reporter_name', 'reporter_email', 'reporter_phone', 
             'created_at', 'updated_at', 'attachments'
         )
-        # ⚠️ CAMBIO CLAVE: Quitamos 'status' y 'assigned_to' de solo lectura.
-        # Ahora, solo el campo 'reporter' y las fechas son protegidos.
         # La clase IsStaffOrOwner se encarga de que solo el Staff pueda hacer PATCH en estos campos.
         read_only_fields = ('reporter', 'created_at', 'updated_at')
 

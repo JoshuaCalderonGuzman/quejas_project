@@ -120,7 +120,7 @@ class Attachment(models.Model):
         complaint_id = getattr(self.complaint, 'pk', 'N/A')
         return f"Adjunto {self.file.name} para queja {complaint_id}"
 # --------------------------------------------------------------------
-# 5. Perfil de Administrador (para filtrar por Categoría) <-- ¡NUEVO!
+# 5. Perfil de Administrador (para filtrar por Categoría) 
 # --------------------------------------------------------------------
 class AdminProfile(models.Model):
     """
