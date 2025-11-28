@@ -23,9 +23,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ci5av8j5bzzy9bp@5c*pn0gj$f9)!@j!%4dvoffrgii(_b8kg8'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['.QUEJAS_MUN.com', 'ngrok-temporal.']
+ALLOWED_HOSTS = [
+	'127.0.0.1',
+	'localhost',
+	'.ngrok-free.dev',
+ 	'nonsecretarial-irksomely-melissa.ngrok-free.dev'
+	'nonsecretarial-irksomely-melissa.ngrok-free.dev.nonsecretarial-irksomely-melissa.ngrok-free.dev']
 
 
 # Application definition
@@ -121,3 +126,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+import os 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
