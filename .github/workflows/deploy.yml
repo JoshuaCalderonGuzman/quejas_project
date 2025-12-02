@@ -1,0 +1,31 @@
+name: Despliegue a WSL Local
+
+# Se ejecuta solo cuando el CI (tests) pasa y es en la rama main
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy-local:
+    # ESTA ES LA CLAVE: Le dice a GitHub que use TU computadora
+    runs-on: self-hosted
+
+    steps:
+    - name: Actualizar Repositorio y Reiniciar
+      run: |
+        # 1. Ir a la carpeta donde YA tienes tu proyecto desplegado
+        # (Ajusta la ruta si es diferente)
+        cd /home/robegg/quejas_project
+        # 2. Descargar los últimos cambios
+        # (Quizás necesites hacer 'git stash' si tienes cambios locales basura)
+        git pull origin main
+        # 3. Activar entorno y actualizar librerías
+        source venv/bin/activate
+        pip install -r requirements.txt
+        # 4. Tareas de Django
+        python manage.py collectstatic --noinput
+        python manage.py migrate
+        # 5. Reiniciar servicios (Gracias al paso 2, no pedirá password)
+        sudo systemctl restart gunicorn
+        sudo systemctl restart nginx
+        echo "¡Despliegue en WSL completado!"
