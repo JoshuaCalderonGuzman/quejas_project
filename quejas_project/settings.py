@@ -129,3 +129,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 import os 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
+
+# Configura la URL de inicio de sesión para el decorador @login_required
+LOGIN_URL = '/admin/login/'
